@@ -1,0 +1,16 @@
+{
+  "compilerOptions": {
+    "rootDir": "./app/src",
+    "outDir": "./target/app",
+    "types": ["mocha", "chai"],
+    "typeRoots": ["./node_modules/@types"],
+    "lib": ["ESNext", "DOM", "DOM.Iterable"],
+    "module": "commonjs",
+    "target": "es6",
+    "esModuleInterop": true,
+    "jsx": "react-jsx",
+    "paths": {
+      "@/*": ["./app/src/*"]
+    }
+  },
+}
