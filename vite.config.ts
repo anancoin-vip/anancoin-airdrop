@@ -7,16 +7,6 @@ export default defineConfig({
   root: './app',
   server: {
     port: 8899,
-    // proxy: {
-    //   '/web': {
-    //     target: 'http://solana-dev.lemconn.com',
-    //     changeOrigin: true,
-    //     cookieDomainRewrite: {
-    //       '*': '',
-    //     },
-    //     // rewrite: path => path.replace(/^\/web/, ''),
-    //   }
-    // },
   },
   resolve: {
     alias: {

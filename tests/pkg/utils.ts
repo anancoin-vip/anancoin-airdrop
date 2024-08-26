@@ -16,7 +16,6 @@ const envItems = [
     "USER_TOKEN_ACCOUNT",
 ];
 
-// 更新 .env 文件
 export function updateEnv() {
     dotenv.config();
     const eol = "\n";
@@ -30,7 +29,6 @@ export function updateEnv() {
     fs.writeFileSync(".env", envContents);
 }
 
-// 显示 .env 文件内容
 export function showEnv() {
     dotenv.config();
     envItems.forEach((item) => {
@@ -41,7 +39,6 @@ export function showEnv() {
     });
 }
 
-// 获取用户钱包密钥
 export function getUserWalletSecretKey(): Uint8Array{
     const defaultPath = path.join(process.env.HOME!, '.config/solana/wallet/user.json');
     const rawKey = JSON.parse(fs.readFileSync(defaultPath, 'utf-8'));
