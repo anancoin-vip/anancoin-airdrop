@@ -1,0 +1,303 @@
+{
+  "version": "0.1.0",
+  "name": "anancoin_airdrop",
+  "instructions": [
+    {
+      "name": "initialize",
+      "accounts": [
+        {
+          "name": "lemconnContractDataAccount",
+          "isMut": true,
+          "isSigner": false,
+          "docs": [
+            "合约数据及签名账户"
+          ]
+        },
+        {
+          "name": "lemconnVaultAccount",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "lemconnOwnerAccount",
+          "isMut": true,
+          "isSigner": true,
+          "docs": [
+            "合约管理账户"
+          ]
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false,
+          "docs": [
+            "系统账户"
+          ]
+        }
+      ],
+      "args": [
+        {
+          "name": "contractBump",
+          "type": "u8"
+        }
+      ]
+    },
+    {
+      "name": "addToken",
+      "accounts": [
+        {
+          "name": "lemconnTokenDataAccount",
+          "isMut": true,
+          "isSigner": false,
+          "docs": [
+            "代币数据账户"
+          ]
+        },
+        {
+          "name": "lemconnTokenPdaAccount",
+          "isMut": true,
+          "isSigner": false,
+          "docs": [
+            "代币合约账户"
+          ]
+        },
+        {
+          "name": "lemconnTokenMasterAccount",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "lemconnTokenMintAccount",
+          "isMut": false,
+          "isSigner": false,
+          "docs": [
+            "代币铸造账户"
+          ]
+        },
+        {
+          "name": "lemconnContractDataAccount",
+          "isMut": true,
+          "isSigner": false,
+          "docs": [
+            "合约数据及签名账户"
+          ]
+        },
+        {
+          "name": "lemconnOwnerAccount",
+          "isMut": true,
+          "isSigner": true,
+          "docs": [
+            "合约管理账户"
+          ]
+        },
+        {
+          "name": "associatedTokenProgram",
+          "isMut": false,
+          "isSigner": false,
+          "docs": [
+            "系统账户"
+          ]
+        },
+        {
+          "name": "tokenProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "tokenAmount",
+          "type": "u64"
+        },
+        {
+          "name": "tokenDecimal",
+          "type": "u8"
+        },
+        {
+          "name": "tokenFees",
+          "type": "u64"
+        }
+      ]
+    },
+    {
+      "name": "claimToken",
+      "accounts": [
+        {
+          "name": "userTokenAccount",
+          "isMut": true,
+          "isSigner": false,
+          "docs": [
+            "用户代币账户"
+          ]
+        },
+        {
+          "name": "userOwnerAccount",
+          "isMut": true,
+          "isSigner": true,
+          "docs": [
+            "用户钱包账户"
+          ]
+        },
+        {
+          "name": "lemconnTokenMintAccount",
+          "isMut": false,
+          "isSigner": false,
+          "docs": [
+            "代币铸造账户"
+          ]
+        },
+        {
+          "name": "lemconnTokenPdaAccount",
+          "isMut": true,
+          "isSigner": false,
+          "docs": [
+            "代币持币账户（PDA）"
+          ]
+        },
+        {
+          "name": "lemconnTokenDataAccount",
+          "isMut": false,
+          "isSigner": false,
+          "docs": [
+            "代币数据账户"
+          ]
+        },
+        {
+          "name": "lemconnContractDataAccount",
+          "isMut": true,
+          "isSigner": false,
+          "docs": [
+            "合约数据及签名账户"
+          ]
+        },
+        {
+          "name": "lemconnVaultAccount",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "associatedTokenProgram",
+          "isMut": false,
+          "isSigner": false,
+          "docs": [
+            "系统账户"
+          ]
+        },
+        {
+          "name": "tokenProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "tokenAmount",
+          "type": "u64"
+        }
+      ]
+    }
+  ],
+  "accounts": [
+    {
+      "name": "LemconnContract",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "initialized",
+            "type": "bool"
+          },
+          {
+            "name": "bump",
+            "type": "u8"
+          },
+          {
+            "name": "lemconnOwnerAccount",
+            "type": "publicKey"
+          },
+          {
+            "name": "lemconnVaultAccount",
+            "type": "publicKey"
+          }
+        ]
+      }
+    },
+    {
+      "name": "LemconnToken",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "lemconnTokenMintAccount",
+            "docs": [
+              "代币铸造账户"
+            ],
+            "type": "publicKey"
+          },
+          {
+            "name": "lemconnTokenPdaAccount",
+            "docs": [
+              "代币合约账户（PDA）"
+            ],
+            "type": "publicKey"
+          },
+          {
+            "name": "lemconnTokenFees",
+            "docs": [
+              "代币交易费用"
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "lemconnTokenDecimal",
+            "docs": [
+              "代币小数位"
+            ],
+            "type": "u8"
+          }
+        ]
+      }
+    }
+  ],
+  "errors": [
+    {
+      "code": 6000,
+      "name": "TokenAmountNotEnough",
+      "msg": "The token amount is not enough"
+    },
+    {
+      "code": 6001,
+      "name": "LamportsAmountNotEnough",
+      "msg": "The lamports amount is not enough"
+    },
+    {
+      "code": 6002,
+      "name": "AccountNotCorrect",
+      "msg": "The account is not correct"
+    },
+    {
+      "code": 6003,
+      "name": "ContractInitialized",
+      "msg": "The smart contract has been initialized"
+    },
+    {
+      "code": 6004,
+      "name": "ContractNotInitialized",
+      "msg": "The smart contract has not been initialized"
+    }
+  ],
+  "metadata": {
+    "address": "sEs461DSnSm3m9ssbWZ6j8WXrWJm96owZsAgwVSVKqB"
+  },
+  "address": "sEs461DSnSm3m9ssbWZ6j8WXrWJm96owZsAgwVSVKqB"
+}

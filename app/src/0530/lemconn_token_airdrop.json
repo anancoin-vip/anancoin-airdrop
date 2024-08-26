@@ -1,0 +1,391 @@
+{
+  "version": "0.1.0",
+  "name": "anancoin_airdrop",
+  "instructions": [
+    {
+      "name": "initialize",
+      "accounts": [
+        {
+          "name": "lemconnOwnerAccount",
+          "isMut": true,
+          "isSigner": true,
+          "docs": [
+            "合约管理账户"
+          ]
+        },
+        {
+          "name": "lemconnTokenAccount",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "lemconnTokenMint",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "lemconnFeesAccount",
+          "isMut": true,
+          "isSigner": false,
+          "docs": [
+            "交易费用账户"
+          ]
+        },
+        {
+          "name": "lemconnFeesMint",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "pdaTokenAccount",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "pdaOwnerAccount",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "associatedTokenProgram",
+          "isMut": false,
+          "isSigner": false,
+          "docs": [
+            "系统账户"
+          ]
+        },
+        {
+          "name": "tokenProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "tokenAmount",
+          "type": "u64"
+        },
+        {
+          "name": "tokenFees",
+          "type": "u64"
+        },
+        {
+          "name": "tokenMode",
+          "type": "u8"
+        },
+        {
+          "name": "tokenDecimal",
+          "type": "u8"
+        },
+        {
+          "name": "pdaOwnerBump",
+          "type": "u8"
+        }
+      ]
+    },
+    {
+      "name": "claim",
+      "accounts": [
+        {
+          "name": "userOwnerAccount",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "userTokenAccount",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "pdaTokenAccount",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "pdaOwnerAccount",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "lemconnOwnerAccount",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "lemconnTokenMint",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "associatedTokenProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "tokenProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "tokenAmount",
+          "type": "u64"
+        }
+      ]
+    },
+    {
+      "name": "claim2",
+      "accounts": [
+        {
+          "name": "userOwnerAccount",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "userTokenAccount",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "userFeesAccount",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "pdaTokenAccount",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "pdaOwnerAccount",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "lemconnFeesAccount",
+          "isMut": true,
+          "isSigner": false,
+          "docs": [
+            "合约金库账户"
+          ]
+        },
+        {
+          "name": "lemconnTokenMint",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "associatedTokenProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "tokenProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "tokenAmount",
+          "type": "u64"
+        }
+      ]
+    },
+    {
+      "name": "update",
+      "accounts": [
+        {
+          "name": "lemconnOwnerAccount",
+          "isMut": false,
+          "isSigner": true
+        },
+        {
+          "name": "lemconnTokenAccount",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "pdaOwnerAccount",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "pdaTokenAccount",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "tokenProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "tokenFees",
+          "type": "u64"
+        },
+        {
+          "name": "tokenMode",
+          "type": "u8"
+        },
+        {
+          "name": "tokenAmount",
+          "type": "u64"
+        }
+      ]
+    },
+    {
+      "name": "close",
+      "accounts": [
+        {
+          "name": "lemconnOwnerAccount",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "lemconnTokenAccount",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "lemconnTokenMint",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "pdaOwnerAccount",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "pdaTokenAccount",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "tokenProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": []
+    }
+  ],
+  "accounts": [
+    {
+      "name": "Lemconn",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "initialized",
+            "type": "bool"
+          },
+          {
+            "name": "lemconnOwnerAccount",
+            "type": "publicKey"
+          },
+          {
+            "name": "lemconnTokenMint",
+            "type": "publicKey"
+          },
+          {
+            "name": "lemconnTokenAccount",
+            "type": "publicKey"
+          },
+          {
+            "name": "lemconnTokenFees",
+            "type": "u64"
+          },
+          {
+            "name": "lemconnTokenMode",
+            "type": "u8"
+          },
+          {
+            "name": "lemconnTokenDecimal",
+            "type": "u8"
+          },
+          {
+            "name": "pdaTokenAccount",
+            "type": "publicKey"
+          },
+          {
+            "name": "pdaOwnerBump",
+            "type": "u8"
+          },
+          {
+            "name": "lemconnFeesMint",
+            "type": "publicKey"
+          },
+          {
+            "name": "lemconnFeesAccount",
+            "type": "publicKey"
+          }
+        ]
+      }
+    }
+  ],
+  "errors": [
+    {
+      "code": 6000,
+      "name": "TokenAmountNotEnough",
+      "msg": "token amount is not enough"
+    },
+    {
+      "code": 6001,
+      "name": "GasFeeNotEnough",
+      "msg": "gas fee is not enough"
+    },
+    {
+      "code": 6002,
+      "name": "AccountNotCorrect",
+      "msg": "account is not correct"
+    },
+    {
+      "code": 6003,
+      "name": "ContractInitialized",
+      "msg": "smart contract has been initialized"
+    },
+    {
+      "code": 6004,
+      "name": "ContractNotInitialized",
+      "msg": "smart contract has not been initialized"
+    },
+    {
+      "code": 6005,
+      "name": "TransactionPairNotSupported",
+      "msg": "current transaction pair is not supported"
+    }
+  ],
+  "metadata": {
+    "address": "sEs461DSnSm3m9ssbWZ6j8WXrWJm96owZsAgwVSVKqB"
+  }
+}
