@@ -108,55 +108,6 @@ impl<'a, 'b, 'c, 'info> Claim<'info> {
 }
 
 #[derive(Accounts)]
-pub struct Update<'info> {
-    // 合约管理账户
-    #[account(
-        constraint = lemconn_owner_account.key() == pda_owner_account.lemconn_owner_account,
-    )]
-    pub lemconn_owner_account: Signer<'info>,
-
-    // 柠檬持币账户
-    #[account(
-        mut,
-        constraint = lemconn_token_account.owner == lemconn_owner_account.key(),
-        constraint = lemconn_token_account.mint == pda_owner_account.lemconn_token_mint.key(),
-        constraint = lemconn_token_account.key() == pda_owner_account.lemconn_token_account,
-    )]
-    pub lemconn_token_account: Box<Account<'info, TokenAccount>>,
-
-    // PDA 管理账户
-    #[account(mut)]
-    pub pda_owner_account: Box<Account<'info, Lemconn>>,
-
-    // PDA 代币账户
-    #[account(
-        mut,
-        constraint = pda_token_account.owner == pda_owner_account.key(),
-        constraint = pda_token_account.mint == pda_owner_account.lemconn_token_mint.key(),
-        constraint = pda_token_account.key() == pda_owner_account.pda_token_account,
-    )]
-    pub pda_token_account: Box<Account<'info, TokenAccount>>,
-
-    // 系统账户
-    pub token_program: Program<'info, Token>,
-    pub system_program: Program<'info, System>,
-}
-
-impl<'a, 'b, 'c, 'info> Update<'info> {
-    pub fn transfer_token_lemconn_to_pda_cpicontext(
-        &self,
-    ) -> CpiContext<'a, 'b, 'c, 'info, Transfer<'info>> {
-        let cpi_accounts = Transfer {
-            from: self.lemconn_token_account.to_account_info().clone(),
-            to: self.pda_token_account.to_account_info().clone(),
-            authority: self.lemconn_owner_account.to_account_info().clone(),
-        };
-        let cpi_program = self.token_program.to_account_info();
-        CpiContext::new(cpi_program, cpi_accounts)
-    }
-}
-
-#[derive(Accounts)]
 pub struct Close<'info> {
     // 合约管理账户
     #[account(
