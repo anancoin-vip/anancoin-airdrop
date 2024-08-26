@@ -109,66 +109,43 @@ impl<'a, 'b, 'c, 'info> Claim<'info> {
 
 #[derive(Accounts)]
 pub struct Close<'info> {
-    // 合约管理账户
-    #[account(
-        mut,
-        constraint = lemconn_owner_account.key() == pda_owner_account.lemconn_owner_account,
-    )]
-    pub lemconn_owner_account: Signer<'info>,
-
-    // 柠檬持币账户
-    #[account(
-        mut,
-        constraint = lemconn_token_account.owner == lemconn_owner_account.key(),
-        constraint = lemconn_token_account.mint == lemconn_token_mint.key(),
-        constraint = lemconn_token_account.key() == pda_owner_account.lemconn_token_account,
-    )]
-    pub lemconn_token_account: Box<Account<'info, TokenAccount>>,
-
-    // 代币铸造账户
-    #[account(
-        constraint = lemconn_token_mint.key() == pda_owner_account.lemconn_token_mint,
-    )]
-    pub lemconn_token_mint: Account<'info, Mint>,
-
-    // 合约数据及签名账户
     #[account(mut)]
-    pub pda_owner_account: Box<Account<'info, Lemconn>>,
+    pub authority: Signer<'info>,
 
-    // PDA 持币账户
     #[account(
         mut,
-        constraint = pda_token_account.owner == pda_owner_account.key(),
-        constraint = pda_token_account.mint == lemconn_token_mint.key(),
-        constraint = pda_token_account.key() == pda_owner_account.pda_token_account,
+        constraint = token_account.owner == authority.key(),
+        constraint = token_account.mint == token_mint.key(),
     )]
-    pub pda_token_account: Box<Account<'info, TokenAccount>>,
+    pub token_account: Account<'info, TokenAccount>,
 
-    // 系统用户
+    #[account(
+        mut,
+        constraint = pda_account.owner == config.key(),
+        constraint = pda_account.mint == token_mint.key(),
+    )]
+    pub pda_account: Box<Account<'info, TokenAccount>>,
+
+    #[account(
+        constraint = token_mint.key() == config.token_mint,
+    )]
+    pub token_mint: Account<'info, Mint>,
+
+    #[account(mut)]
+    pub config: Account<'info, Config>,
+
     pub token_program: Program<'info, Token>,
     pub system_program: Program<'info, System>,
 }
 
 impl<'a, 'b, 'c, 'info> Close<'info> {
-    pub fn transfer_token_pda_to_lemconn_cpicontext(
-        &self,
-    ) -> CpiContext<'a, 'b, 'c, 'info, Transfer<'info>> {
-        let cpi_accounts = Transfer {
-            from: self.pda_token_account.to_account_info().clone(),
-            to: self.lemconn_token_account.to_account_info().clone(),
-            authority: self.pda_owner_account.to_account_info().clone(),
-        };
-        let cpi_program = self.token_program.to_account_info();
-        CpiContext::new(cpi_program, cpi_accounts)
-    }
-
     pub fn close_pda_token_account_cpicontext(
         &self,
     ) -> CpiContext<'a, 'b, 'c, 'info, CloseAccount<'info>> {
         let cpi_accounts = CloseAccount {
-            account: self.pda_token_account.to_account_info().clone(),
-            destination: self.lemconn_token_account.to_account_info().clone(),
-            authority: self.pda_owner_account.to_account_info().clone(),
+            account: self.pda_account.to_account_info().clone(),
+            destination: self.token_account.to_account_info().clone(),
+            authority: self.config.to_account_info().clone(),
         };
         let cpi_program = self.token_program.to_account_info();
         CpiContext::new(cpi_program, cpi_accounts)
