@@ -2,77 +2,55 @@ use anchor_lang::prelude::*;
 use anchor_spl::associated_token::AssociatedToken;
 use anchor_spl::token::{CloseAccount, Mint, Token, TokenAccount, Transfer};
 
-use crate::state::Lemconn;
+use crate::state::Config;
 
 #[derive(Accounts)]
 pub struct Initialize<'info> {
-    // 合约管理账户
     #[account(mut)]
-    pub lemconn_owner_account: Signer<'info>,
+    pub authority: Signer<'info>,
 
-    // 柠檬持币账户
     #[account(
         mut,
-        constraint = lemconn_token_account.owner == lemconn_owner_account.key(),
-        constraint = lemconn_token_account.mint == lemconn_token_mint.key(),
+        constraint = token_account.owner == authority.key(),
+        constraint = token_account.mint == token_mint.key(),
     )]
-    pub lemconn_token_account: Box<Account<'info, TokenAccount>>,
+    pub token_account: Account<'info, TokenAccount>,
 
-    // 柠檬代币铸造账户
-    pub lemconn_token_mint: Box<Account<'info, Mint>>,
+    pub token_mint: Account<'info, Mint>,
 
-    // 交易费用账户
     #[account(
         init_if_needed,
-        payer = lemconn_owner_account,
-        associated_token::authority = lemconn_owner_account,
-        associated_token::mint = lemconn_fees_mint,
+        payer = authority,
+        associated_token::mint = token_mint,
+        associated_token::authority = config,
     )]
-    pub lemconn_fees_account: Box<Account<'info, TokenAccount>>,
+    pub token_pda: Account<'info, TokenAccount>,
 
-    // 交易费用账户Mint
     #[account(
-        constraint = lemconn_fees_mint.key() == lemconn_fees_account.mint,
-    )]
-    pub lemconn_fees_mint: Box<Account<'info, Mint>>,
-
-    // PDA 持币账户
-    #[account(
-        init,
-        payer = lemconn_owner_account,
-        associated_token::mint = lemconn_token_mint,
-        associated_token::authority = pda_owner_account,
-    )]
-    pub pda_token_account: Box<Account<'info, TokenAccount>>,
-
-    // PDA 持币账户所有者
-    #[account(
-        init,
-        payer = lemconn_owner_account,
-        space = 8 + std::mem::size_of::<Lemconn>(),
+        init_if_needed,
+        payer = authority,
+        space = 8 + std::mem::size_of::<Config>(),
         seeds = [
-            lemconn_owner_account.to_account_info().key.as_ref(),
-            lemconn_fees_mint.to_account_info().key.as_ref(),
-            lemconn_token_mint.to_account_info().key.as_ref(),
+            authority.to_account_info().key.as_ref(),
+            token_mint.to_account_info().key.as_ref(),
         ],
         bump,
     )]
-    pub pda_owner_account: Box<Account<'info, Lemconn>>,
+    pub config: Box<Account<'info, Config>>,
 
-    // 系统账户
     pub associated_token_program: Program<'info, AssociatedToken>,
     pub token_program: Program<'info, Token>,
     pub system_program: Program<'info, System>,
 }
 
 impl<'a, 'b, 'c, 'info> Initialize<'info> {
-    pub fn transfer_token_lemconn_to_pda_cpicontext(
+    pub fn transfer_token_to_pda_cpicontext(
         &self,
     ) -> CpiContext<'a, 'b, 'c, 'info, Transfer<'info>> {
         let cpi_accounts = Transfer {
-            from: self.lemconn_token_account.to_account_info().clone(),
-            to: self.pda_token_account.to_account_info().clone(),
-            authority: self.lemconn_owner_account.to_account_info().clone(),
+            from: self.token_account.to_account_info().clone(),
+            to: self.token_pda.to_account_info().clone(),
+            authority: self.authority.to_account_info().clone(),
         };
         let cpi_program = self.token_program.to_account_info();
         CpiContext::new(cpi_program, cpi_accounts)
@@ -81,81 +59,48 @@ impl<'a, 'b, 'c, 'info> Initialize<'info> {
 
 #[derive(Accounts)]
 pub struct Claim<'info> {
-    // 用户钱包账户
-    #[account(
-        mut,
-        constraint = user_owner_account.key() != lemconn_owner_account.key(),
-    )]
-    pub user_owner_account: Signer<'info>,
+    #[account(mut)]
+    pub user: Signer<'info>,
 
-    // 用户代币账户
+    #[account(
+        constraint = token_mint.key() == config.token_mint.key(),
+    )]
+    pub token_mint: Account<'info, Mint>,
+
     #[account(
         init_if_needed,
-        payer = user_owner_account,
-        associated_token::authority = user_owner_account,
-        associated_token::mint = lemconn_token_mint,
+        payer = user,
+        associated_token::authority = user,
+        associated_token::mint = token_mint,
     )]
-    pub user_token_account: Box<Account<'info, TokenAccount>>,
+    pub token_account: Account<'info, TokenAccount>,
 
-    // PDA代币账户
     #[account(
         mut,
-        constraint = pda_token_account.key() == pda_owner_account.pda_token_account.key(),
-        constraint = pda_token_account.mint == pda_owner_account.lemconn_token_mint.key(),
+        constraint = pda_account.owner == config.authority,
+        constraint = pda_account.mint == token_mint.key(),
     )]
-    pub pda_token_account: Box<Account<'info, TokenAccount>>,
+    pub pda_account: Account<'info, TokenAccount>,
 
-    // PDA管理账户
     #[account(
         mut,
-        constraint = pda_owner_account.key() == pda_token_account.owner,
+        constraint = config.authority == config.authority,
     )]
-    pub pda_owner_account: Account<'info, Lemconn>,
+    pub config: Account<'info, Config>,
 
-    /// CHECK: 合约费用账户
-    #[account(
-        mut,
-        constraint = lemconn_owner_account.key() == pda_owner_account.lemconn_owner_account.key(),
-    )]
-    pub lemconn_owner_account: AccountInfo<'info>,
-
-    // 代币铸造账户
-    #[account(
-        constraint = lemconn_token_mint.key() == pda_owner_account.lemconn_token_mint.key(),
-    )]
-    pub lemconn_token_mint: Account<'info, Mint>,
-
-    // 系统账户
     pub associated_token_program: Program<'info, AssociatedToken>,
     pub token_program: Program<'info, Token>,
     pub system_program: Program<'info, System>,
 }
 
 impl<'a, 'b, 'c, 'info> Claim<'info> {
-    pub fn transfer_sol_user_to_lemconn_cpi(&self, amount: u64) -> Result<()> {
-        let ix = anchor_lang::solana_program::system_instruction::transfer(
-            &self.user_owner_account.key(),
-            &self.lemconn_owner_account.key(),
-            amount.into(),
-        );
-
-        anchor_lang::solana_program::program::invoke(
-            &ix,
-            &[
-                self.user_owner_account.to_account_info(),
-                self.lemconn_owner_account.to_account_info(),
-            ],
-        )
-        .map_err(|err| err.into())
-    }
-
-    pub fn transfer_token_lemconn_to_user_cpicontext(
+    pub fn transfer_token_to_user_cpicontext(
         &self,
     ) -> CpiContext<'a, 'b, 'c, 'info, Transfer<'info>> {
         let cpi_accounts = Transfer {
-            from: self.pda_token_account.to_account_info().clone(),
-            to: self.user_token_account.to_account_info().clone(),
-            authority: self.pda_owner_account.to_account_info().clone(),
+            from: self.pda_account.to_account_info().clone(),
+            to: self.token_account.to_account_info().clone(),
+            authority: self.config.to_account_info().clone(),
         };
         let cpi_program = self.token_program.to_account_info();
         CpiContext::new(cpi_program, cpi_accounts)
