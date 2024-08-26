@@ -1,0 +1,335 @@
+{
+  "version": "0.1.0",
+  "name": "anancoin_airdrop",
+  "instructions": [
+    {
+      "name": "initialize",
+      "accounts": [
+        {
+          "name": "lemconnOwnerAccount",
+          "isMut": true,
+          "isSigner": true,
+          "docs": [
+            "合约管理账户"
+          ]
+        },
+        {
+          "name": "lemconnTokenPdaAccount",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "lemconnTokenPdaOwnerAccount",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "lemconnTokenMasterAccount",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "lemconnTokenMintAccount",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "lemconnVaultAccount",
+          "isMut": false,
+          "isSigner": false,
+          "docs": [
+            "合约金库账户 (WSOL)"
+          ]
+        },
+        {
+          "name": "lemconnVaultMintAccount",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "associatedTokenProgram",
+          "isMut": false,
+          "isSigner": false,
+          "docs": [
+            "系统账户"
+          ]
+        },
+        {
+          "name": "tokenProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "tokenAmount",
+          "type": "u64"
+        },
+        {
+          "name": "tokenFees",
+          "type": "u64"
+        },
+        {
+          "name": "tokenConstFees",
+          "type": "bool"
+        },
+        {
+          "name": "tokenDecimal",
+          "type": "u8"
+        },
+        {
+          "name": "tokenPdaOwnerBump",
+          "type": "u8"
+        }
+      ]
+    },
+    {
+      "name": "claim",
+      "accounts": [
+        {
+          "name": "userOwnerAccount",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "userTokenAccount",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "userVaultAccount",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "lemconnTokenPdaAccount",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "lemconnTokenPdaOwnerAccount",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "lemconnTokenMintAccount",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "lemconnVaultAccount",
+          "isMut": true,
+          "isSigner": false,
+          "docs": [
+            "合约金库账户"
+          ]
+        },
+        {
+          "name": "tokenProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "tokenAmount",
+          "type": "u64"
+        }
+      ]
+    },
+    {
+      "name": "update",
+      "accounts": [
+        {
+          "name": "lemconnOwnerAccount",
+          "isMut": false,
+          "isSigner": true
+        },
+        {
+          "name": "lemconnTokenPdaOwnerAccount",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "lemconnTokenPdaAccount",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "lemconnTokenMasterAccount",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "lemconnTokenMintAccount",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "tokenProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "tokenFees",
+          "type": "u64"
+        },
+        {
+          "name": "tokenConstFees",
+          "type": "bool"
+        },
+        {
+          "name": "tokenAmount",
+          "type": "u64"
+        }
+      ]
+    },
+    {
+      "name": "close",
+      "accounts": [
+        {
+          "name": "lemconnOwnerAccount",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "lemconnTokenPdaOwnerAccount",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "lemconnTokenPdaAccount",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "lemconnTokenMasterAccount",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "lemconnTokenMintAccount",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "tokenProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": []
+    }
+  ],
+  "accounts": [
+    {
+      "name": "Lemconn",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "initialized",
+            "type": "bool"
+          },
+          {
+            "name": "lemconnOwnerAccount",
+            "type": "publicKey"
+          },
+          {
+            "name": "lemconnVaultAccount",
+            "type": "publicKey"
+          },
+          {
+            "name": "lemconnVaultMintAccount",
+            "type": "publicKey"
+          },
+          {
+            "name": "lemconnTokenMinAccount",
+            "type": "publicKey"
+          },
+          {
+            "name": "lemconnTokenPdaAccount",
+            "type": "publicKey"
+          },
+          {
+            "name": "lemconnTokenPdaOwnerBump",
+            "type": "u8"
+          },
+          {
+            "name": "lemconnTokenMasterAccount",
+            "type": "publicKey"
+          },
+          {
+            "name": "lemconnTokenFees",
+            "type": "u64"
+          },
+          {
+            "name": "lemconnTokenConstFees",
+            "type": "bool"
+          },
+          {
+            "name": "lemconnTokenDecimal",
+            "type": "u8"
+          }
+        ]
+      }
+    }
+  ],
+  "errors": [
+    {
+      "code": 6000,
+      "name": "TokenAmountNotEnough",
+      "msg": "The token amount is not enough"
+    },
+    {
+      "code": 6001,
+      "name": "LamportsAmountNotEnough",
+      "msg": "The lamports amount is not enough"
+    },
+    {
+      "code": 6002,
+      "name": "AccountNotCorrect",
+      "msg": "The account is not correct"
+    },
+    {
+      "code": 6003,
+      "name": "ContractInitialized",
+      "msg": "The smart contract has been initialized"
+    },
+    {
+      "code": 6004,
+      "name": "ContractNotInitialized",
+      "msg": "The smart contract has not been initialized"
+    },
+    {
+      "code": 6005,
+      "name": "CvvAuthFailed",
+      "msg": "The CVV authentication failed"
+    }
+  ],
+  "metadata": {
+    "address": "sEs461DSnSm3m9ssbWZ6j8WXrWJm96owZsAgwVSVKqB"
+  }
+}
