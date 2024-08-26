@@ -4,8 +4,7 @@
         "lint": "prettier */*.js \"*/**/*{.js,.ts}\" --check",
         "compile": "tsc -p ./tsconfig.json",
         "token-init": "yarn run compile && node app/src/initialize.js",
-        "start": "vite",
-        "lemconn:cli:init": "node ./app/cli/init.ts"
+        "start": "vite"
     },
     "dependencies": {
         "@coral-xyz/anchor": "^0.30.1",

@@ -1,233 +1,137 @@
 import assert from "assert";
 import * as anchor from "@coral-xyz/anchor";
-import { LemconnTokenAirdrop } from "../target/types/anancoin_airdrop";
-import { NATIVE_MINT, ASSOCIATED_TOKEN_PROGRAM_ID, TOKEN_PROGRAM_ID } from "@solana/spl-token";
+import { AnanCoinAirdrop } from "../target/types/anancoin_airdrop";
+import { ASSOCIATED_TOKEN_PROGRAM_ID, TOKEN_PROGRAM_ID } from "@solana/spl-token";
 import { 
-  initLemconnCommonContext, 
-  LemconnCommonContext, 
-  updateLemconnContext, 
-  initLemconnTokenContext, 
-  initLemconnAirdropContext, 
-  LemconnTokenContext, 
+  initCommonContext, 
+  CommonContext, 
+  initAirdropContext, 
   showTokenAccountBalance, 
-  LemconnAirdropContext,
-  getTokenAccountBalance,
+  AirdropContext,
 } from "./pkg/account";
 import * as dotenv from "dotenv";
 import { useAnchorWallet } from "@solana/wallet-adapter-react";
 dotenv.config();
 
-describe("lemconn", () => {
-  const program = anchor.workspace.LemconnTokenAirdrop as anchor.Program<LemconnTokenAirdrop>;
+describe("anancoin", () => {
+  const program = anchor.workspace.AnanCoinAirdrop as anchor.Program<AnanCoinAirdrop>;
   const provider = anchor.AnchorProvider.env();
   anchor.setProvider(provider);
   const connection = provider.connection;
-  // 柠檬钱包账户
-  const lemconnOwnerAccount = provider.wallet as anchor.Wallet;
-  // 柠檬代币数量
-  const lemconnTokenAmount = 10000;
-  // 柠檬代币小数位数
-  const lemconnTokenDecimal = 6;
-  // 柠檬代币手续费
-  let lemconnTokenFees = 0.01 * anchor.web3.LAMPORTS_PER_SOL;
-  // 柠檬钱包余额
-  let lemconnNativeBanlace = 0;
-  // 柠檬代币余额
-  let lemconnTokenBanlace = 0;
-  // PDA代币数量
-  let pdaTokenAmount = 1000;
 
-  // 用户钱包账户
-  const userOwnerAccount = new anchor.Wallet(anchor.web3.Keypair.generate());
-  // 用户代币数量
-  let userTokenAmount = 0;
-  // 用户钱包余额
+  const authorityWallet = provider.wallet as anchor.Wallet;
+  let authorityNativeBanlace = 0;
+  let authorityTokenBanlace = 0;
+
+  const userWallet = new anchor.Wallet(anchor.web3.Keypair.generate());
+  let userTokenBanlace = 0;
   let userNativeBanlace = 0;
 
-  let commonContext: LemconnCommonContext;
-  let airdropContext: LemconnAirdropContext;
+  const tokenAmount = 10000;
+  const tokenDecimals = 6;
+  const tokenLimit = 100;
+
+  let pdaTokenBanlace = 1000;
+
+  let commonContext: CommonContext;
+  let airdropContext: AirdropContext;
 
   it("(Context) Initialize Common Context", async () => {
-    commonContext = await initLemconnCommonContext(connection, program ,lemconnOwnerAccount, userOwnerAccount);
+    commonContext = await initCommonContext(connection, program ,authorityWallet, userWallet);
   })
 
   it("(Context) Initialize Airdrop Context", async () => {
-    airdropContext = await initLemconnAirdropContext(commonContext, lemconnTokenAmount, lemconnTokenDecimal);
-    lemconnNativeBanlace = await connection.getBalance(commonContext.lemconnWalletPubkey);
-    lemconnTokenBanlace = (await connection.getTokenAccountBalance(airdropContext.lemconnTokenAccountPubkey)).value.uiAmount;
+    airdropContext = await initAirdropContext(commonContext, tokenAmount, tokenDecimals);
+    authorityNativeBanlace = await connection.getBalance(commonContext.authorityWalletPubkey);
+    authorityTokenBanlace = (await connection.getTokenAccountBalance(airdropContext.tokenAccountPubkey)).value.uiAmount;
     userNativeBanlace = await connection.getBalance(commonContext.userWalletPubkey);
   })
 
   it("(Contract) Dispatch initialize Function", async () => {
-    lemconnTokenBanlace -= pdaTokenAmount;
+    authorityTokenBanlace -= pdaTokenBanlace;
     const tx = await program.methods.initialize(
-      new anchor.BN(pdaTokenAmount),
-      new anchor.BN(lemconnTokenFees),
-      0,
-      lemconnTokenDecimal,
-      airdropContext.pdaOwnerAccountBump
+      new anchor.BN(pdaTokenBanlace),
+      tokenDecimals,
+      tokenLimit,
+      airdropContext.configAccountBump
     ).accounts({
-      lemconnOwnerAccount: commonContext.lemconnWalletPubkey,
-      lemconnTokenAccount: airdropContext.lemconnTokenAccountPubkey,
-      lemconnTokenMint: airdropContext.lemconnTokenMintPubkey,
-      lemconnFeesAccount: commonContext.lemconnNativeTokenAccount,
-      lemconnFeesMint: NATIVE_MINT,
-      pdaTokenAccount: airdropContext.pdaTokenAccountPubkey,
-      pdaOwnerAccount: airdropContext.pdaOwnerAccountPubkey,
+      authority: commonContext.authorityWalletPubkey,
+      tokenAccount: airdropContext.tokenAccountPubkey,
+      tokenMint: airdropContext.tokenMintPubkey,
+      tokenPda: airdropContext.pdaAccountPubkey,
+      config: airdropContext.configAccountPubkey,
       associatedTokenProgram: ASSOCIATED_TOKEN_PROGRAM_ID,
       tokenProgram: TOKEN_PROGRAM_ID,
       systemProgram: anchor.web3.SystemProgram.programId,
     }).rpc();
 
-    const lemconnTokenBalance = await connection.getTokenAccountBalance(airdropContext.lemconnTokenAccountPubkey);
-    assert.equal(lemconnTokenBalance.value.uiAmount, lemconnTokenAmount - pdaTokenAmount);
+    const curAuthorityTokenBanlace = await connection.getTokenAccountBalance(airdropContext.tokenAccountPubkey);
+    assert.equal(curAuthorityTokenBanlace.value.uiAmount, authorityTokenBanlace);
 
-    const pdaTokenBanlace = await connection.getTokenAccountBalance(airdropContext.pdaTokenAccountPubkey);
-    assert.equal(pdaTokenBanlace.value.uiAmount, pdaTokenAmount);
+    const curPdaTokenBanlace = await connection.getTokenAccountBalance(airdropContext.pdaAccountPubkey);
+    assert.equal(curPdaTokenBanlace.value.uiAmount, pdaTokenBanlace);
 
-    const account = await program.account.lemconn.fetch(airdropContext.pdaOwnerAccountPubkey);
-    assert.equal(account.initialized, true);
-    assert.equal(account.lemconnOwnerAccount.toBase58(), commonContext.lemconnWalletPubkey.toBase58());
-    assert.equal(account.lemconnTokenMint.toBase58(), airdropContext.lemconnTokenMintPubkey.toBase58());
-    assert.equal(account.lemconnTokenAccount.toBase58(), airdropContext.lemconnTokenAccountPubkey.toBase58());
-    assert.equal(account.lemconnTokenFees, lemconnTokenFees);
-    assert.equal(account.lemconnTokenMode, 0);
-    assert.equal(account.lemconnTokenDecimal, lemconnTokenDecimal);
-    assert.equal(account.pdaTokenAccount.toBase58(), airdropContext.pdaTokenAccountPubkey.toBase58());
-    assert.equal(account.pdaOwnerBump, airdropContext.pdaOwnerAccountBump);
-    assert.equal(account.lemconnFeesAccount.toBase58(), commonContext.lemconnNativeTokenAccount.toBase58());
-    assert.equal(account.lemconnFeesMint.toBase58(), NATIVE_MINT.toBase58());
-    // 显示代币余额
+    const config = await program.account.config.fetch(airdropContext.configAccountPubkey);
+    assert.equal(config.authority.toBase58(), commonContext.authorityWalletPubkey.toBase58());
+    assert.equal(config.tokenMint.toBase58(), airdropContext.tokenMintPubkey.toBase58());
+    assert.equal(config.tokenAccount.toBase58(), airdropContext.tokenAccountPubkey.toBase58());
+    assert.equal(config.tokenPda.toBase58(), airdropContext.pdaAccountPubkey.toBase58());
+    assert.equal(config.tokenDecimals, tokenDecimals);
+    assert.equal(config.tokenLimit, tokenLimit);
+    assert.equal(config.bump, airdropContext.configAccountBump);
     await showTokenAccountBalance(commonContext, airdropContext, false, true);
     console.log("initialize tx: ", tx);
   })
 
   it("(Contract) Dispatch claim Function", async () => {
-    userTokenAmount = 100;
+    userTokenBanlace = 100;
     const tx = await program.methods.claim(
-      new anchor.BN(userTokenAmount),
+      new anchor.BN(userTokenBanlace),
     ).accounts({
-      userOwnerAccount: commonContext.userWalletPubkey,
-      userTokenAccount: airdropContext.userTokenAccountPubkey,
-      pdaTokenAccount: airdropContext.pdaTokenAccountPubkey,
-      pdaOwnerAccount: airdropContext.pdaOwnerAccountPubkey,
-      lemconnOwnerAccount: commonContext.lemconnWalletPubkey,
-      lemconnTokenMint: airdropContext.lemconnTokenMintPubkey,
+      user: commonContext.userWalletPubkey,
+      tokenAccount: airdropContext.userAccountPubkey,
+      tokenMint: airdropContext.tokenMintPubkey,
+      pdaAccount: airdropContext.pdaAccountPubkey,
+      config: airdropContext.configAccountPubkey,
       associatedTokenProgram: ASSOCIATED_TOKEN_PROGRAM_ID,
       tokenProgram: TOKEN_PROGRAM_ID,
       systemProgram: anchor.web3.SystemProgram.programId,
     }).signers([commonContext.userWallet]).rpc();
 
-    const userCurTokenBanlace = await connection.getTokenAccountBalance(airdropContext.userTokenAccountPubkey);
-    assert.equal(userCurTokenBanlace.value.uiAmount, userTokenAmount);
+    const curUserTokenBanlace = await connection.getTokenAccountBalance(airdropContext.userAccountPubkey);
+    assert.equal(curUserTokenBanlace.value.uiAmount, userTokenBanlace);
 
-    const userCurNativeBanlace = await connection.getBalance(commonContext.userWalletPubkey);
-    userNativeBanlace = userNativeBanlace - userTokenAmount * lemconnTokenFees;
-    assert.equal(
-      Math.round(userCurNativeBanlace / anchor.web3.LAMPORTS_PER_SOL),
-      Math.round(userNativeBanlace / anchor.web3.LAMPORTS_PER_SOL)
-    );
+    pdaTokenBanlace -= userTokenBanlace;
+    const curPdaTokenBanlace = await connection.getTokenAccountBalance(airdropContext.pdaAccountPubkey);
+    assert.equal(curPdaTokenBanlace.value.uiAmount, pdaTokenBanlace);
 
-    const lemconnCurNativeBanlace = await connection.getBalance(commonContext.lemconnWalletPubkey);
-    lemconnNativeBanlace = lemconnNativeBanlace + userTokenAmount * lemconnTokenFees;
-    assert.equal(
-      Math.round(lemconnCurNativeBanlace / anchor.web3.LAMPORTS_PER_SOL),
-      Math.round(lemconnNativeBanlace / anchor.web3.LAMPORTS_PER_SOL)
-    );
-
-    pdaTokenAmount = pdaTokenAmount - userTokenAmount;
-    const pdaTokenBanlace = await connection.getTokenAccountBalance(airdropContext.pdaTokenAccountPubkey);
-    assert.equal(pdaTokenBanlace.value.uiAmount, pdaTokenAmount);
-
-    // 显示代币余额
     await showTokenAccountBalance(commonContext, airdropContext);
     console.log("claim tx: ", tx);
   })
 
-  it("(Contract) Dispatch update Function", async () => {
-    lemconnTokenFees = 2 * anchor.web3.LAMPORTS_PER_SOL;
-    const updateTx = await program.methods.update(
-      new anchor.BN(lemconnTokenFees),
-      1,
-      new anchor.BN(0),
-    ).accounts({
-      lemconnOwnerAccount: commonContext.lemconnWalletPubkey,
-      lemconnTokenAccount: airdropContext.lemconnTokenAccountPubkey,
-      pdaOwnerAccount: airdropContext.pdaOwnerAccountPubkey,
-      pdaTokenAccount: airdropContext.pdaTokenAccountPubkey,
-      tokenProgram: TOKEN_PROGRAM_ID,
-      systemProgram: anchor.web3.SystemProgram.programId,
-    }).rpc();
-
-    const claimTx = await program.methods.claim(
-      new anchor.BN(userTokenAmount),
-    ).accounts({
-      userOwnerAccount: commonContext.userWalletPubkey,
-      userTokenAccount: airdropContext.userTokenAccountPubkey,
-      pdaTokenAccount: airdropContext.pdaTokenAccountPubkey,
-      pdaOwnerAccount: airdropContext.pdaOwnerAccountPubkey,
-      lemconnOwnerAccount: commonContext.lemconnWalletPubkey,
-      lemconnTokenMint: airdropContext.lemconnTokenMintPubkey,
-      associatedTokenProgram: ASSOCIATED_TOKEN_PROGRAM_ID,
-      tokenProgram: TOKEN_PROGRAM_ID,
-      systemProgram: anchor.web3.SystemProgram.programId,
-    }).signers([commonContext.userWallet]).rpc();
-
-    const account = await program.account.lemconn.fetch(airdropContext.pdaOwnerAccountPubkey);
-    assert.equal(account.lemconnTokenFees, lemconnTokenFees);
-    assert.equal(account.lemconnTokenMode, 1);
-
-    const userCurTokenBanlace = await connection.getTokenAccountBalance(airdropContext.userTokenAccountPubkey);
-    assert.equal(userCurTokenBanlace.value.uiAmount, userTokenAmount * 2);
-
-    const userCurNativeBanlace = await connection.getBalance(commonContext.userWalletPubkey);
-    userNativeBanlace = userNativeBanlace - lemconnTokenFees
-    assert.equal(
-      Math.round(userCurNativeBanlace / anchor.web3.LAMPORTS_PER_SOL),
-      Math.round(userNativeBanlace / anchor.web3.LAMPORTS_PER_SOL)
-    );
-
-    const lemconnCurNativeBanlace = await connection.getBalance(commonContext.lemconnWalletPubkey);
-    lemconnNativeBanlace = lemconnNativeBanlace + lemconnTokenFees;
-    assert.equal(
-      Math.round(lemconnCurNativeBanlace / anchor.web3.LAMPORTS_PER_SOL),
-      Math.round(lemconnNativeBanlace / anchor.web3.LAMPORTS_PER_SOL)
-    );
-
-    const pdaCurTokenBanlace = await connection.getTokenAccountBalance(airdropContext.pdaTokenAccountPubkey);
-    assert.equal(pdaCurTokenBanlace.value.uiAmount, pdaTokenAmount - userTokenAmount);
-    pdaTokenAmount = pdaTokenAmount - userTokenAmount;
-
-    // 显示代币余额
-    await showTokenAccountBalance(commonContext, airdropContext);
-    console.log("update tx: ", updateTx);
-    console.log("claim tx: ", claimTx);
-  })
-
   it("(Contract) Dispatch close Function", async () => {
     const tx = await program.methods.close().accounts({
-      lemconnOwnerAccount: commonContext.lemconnWalletPubkey,
-      lemconnTokenAccount: airdropContext.lemconnTokenAccountPubkey,
-      lemconnTokenMint: airdropContext.lemconnTokenMintPubkey,
-      pdaTokenAccount: airdropContext.pdaTokenAccountPubkey,
-      pdaOwnerAccount: airdropContext.pdaOwnerAccountPubkey,
+      authority: commonContext.authorityWalletPubkey,
+      tokenAccount: airdropContext.tokenAccountPubkey,
+      tokenMint: airdropContext.tokenMintPubkey,
+      pdaAccount: airdropContext.pdaAccountPubkey,
+      config: airdropContext.configAccountPubkey,
       tokenProgram: TOKEN_PROGRAM_ID,
       systemProgram: anchor.web3.SystemProgram.programId,
     }).rpc();
 
     let skipPdaToken = false;
-    const lemconnPdaTokenExists = await connection.getAccountInfo(airdropContext.pdaOwnerAccountPubkey);
-    if (lemconnPdaTokenExists) {
-      const pdaCurTokenBanlace = await connection.getTokenAccountBalance(airdropContext.pdaTokenAccountPubkey);
+    const pdaTokenExists = await connection.getAccountInfo(airdropContext.pdaAccountPubkey);
+    if (pdaTokenExists) {
+      const pdaCurTokenBanlace = await connection.getTokenAccountBalance(airdropContext.pdaAccountPubkey);
       assert.equal(pdaCurTokenBanlace.value.uiAmount, 0);
     } else {
       skipPdaToken = true;
     }
 
-    const lemconnCurTokenBanlace = await connection.getTokenAccountBalance(airdropContext.lemconnTokenAccountPubkey);
-    assert.equal(lemconnCurTokenBanlace.value.uiAmount, lemconnTokenBanlace + pdaTokenAmount);
+    const authorityCurTokenBanlace = await connection.getTokenAccountBalance(airdropContext.tokenAccountPubkey);
+    assert.equal(authorityCurTokenBanlace.value.uiAmount, authorityTokenBanlace + pdaTokenBanlace);
 
-    // 显示代币余额
     await showTokenAccountBalance(commonContext, airdropContext, skipPdaToken);
     console.log("close tx: ", tx);
   })
