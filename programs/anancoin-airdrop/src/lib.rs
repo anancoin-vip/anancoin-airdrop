@@ -83,41 +83,25 @@ pub mod anancoin_airdrop {
     }
 
     pub fn close(ctx: Context<Close>) -> Result<()> {
-        let pda_owner_account = &ctx.accounts.pda_owner_account;
+        let config = &ctx.accounts.config;
 
-        // PDA 签名种子
         let pda_seeds = &[
-            pda_owner_account.lemconn_owner_account.as_ref(),
-            pda_owner_account.lemconn_fees_mint.as_ref(),
-            pda_owner_account.lemconn_token_mint.as_ref(),
-            &[pda_owner_account.pda_owner_bump],
+            config.authority.as_ref(),
+            config.token_mint.as_ref(),
+            &[config.bump],
         ];
 
-        // 代币转回
-        transfer(
-            ctx.accounts
-                .transfer_token_pda_to_lemconn_cpicontext()
-                .with_signer(&[pda_seeds.as_ref()]),
-            ctx.accounts.pda_token_account.amount,
-        )?;
-
-        // 关闭销售账户
         close_account(
             ctx.accounts
                 .close_pda_token_account_cpicontext()
                 .with_signer(&[pda_seeds.as_ref()]),
         )?;
 
-        // 关闭合约账户
-        let amount = **ctx
-            .accounts
-            .pda_owner_account
-            .to_account_info()
-            .try_borrow_mut_lamports()?;
-        let pda_owner = &mut ctx.accounts.pda_owner_account;
-        let lemconn_owner = &mut ctx.accounts.lemconn_owner_account;
-        **pda_owner.to_account_info().try_borrow_mut_lamports()? -= amount;
-        **lemconn_owner.to_account_info().try_borrow_mut_lamports()? += amount;
+        let amount = **ctx.accounts.config.to_account_info().try_borrow_mut_lamports()?;
+        let config_account = &mut ctx.accounts.config;
+        let authority_account = &mut ctx.accounts.authority;
+        **config_account.to_account_info().try_borrow_mut_lamports()? -= amount;
+        **authority_account.to_account_info().try_borrow_mut_lamports()? += amount;
 
         Ok(())
     }
